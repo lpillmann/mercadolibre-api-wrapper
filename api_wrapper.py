@@ -117,7 +117,7 @@ def get_df_from_query(query='', category='',  items_per_query='200', total_resul
 
 	# Selects a subset of columns and fixes index
 	df = df[['id', 'title', 'price', 'sold_quantity', 'available_quantity', 'permalink' \
-		, 'thumbnail', 'seller_address', 'seller', 'stop_time']]
+		, 'thumbnail', 'seller_address', 'seller', 'stop_time', 'category_id']]
 	df = df.set_index('id')	
 
 	# Sorts items by sold quantity and deletes duplicates with less sales (assuming they'd be 0)
@@ -153,7 +153,7 @@ def get_df_from_query(query='', category='',  items_per_query='200', total_resul
 	for index, row in df.iterrows():
 	    cities.append(row['seller_address']['city']['name'])    
 	    states.append(row['seller_address']['state']['name'])    
-	    sellers.append(row['seller']['id'])    
+	    sellers.append(str(row['seller']['id']))    
 
 	df['city'] = cities
 	df['state'] = states
