@@ -7,7 +7,6 @@ Repository with code and notebooks used to work with Mercado Libre's API.
 For now, just create a Jupyter notebook in root folder and import module:
 ```
 import mercadolibre as ml
-
 ```
 
 ## What is implemented
