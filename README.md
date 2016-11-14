@@ -1,6 +1,16 @@
 # Projeto A 
 
-## What is done
+## Intro
+Repository with code and notebooks used to work with Mercado Libre's API.
+
+## How to use
+For now, just create a Jupyter notebook in root folder and import module:
+```
+import mercadolibre as ml
+
+```
+
+## What is implemented
 
 - Basic wrapper for querying ML's API
 	- Search by keywords, product category or both combined
