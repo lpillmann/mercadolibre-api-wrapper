@@ -9,7 +9,7 @@ For now, just create a Jupyter notebook in root folder and import module:
 import mercadolibre as ml
 ```
 
-See notebook `wrapper_example.ipynb`.
+See notebook `wrapper-example.ipynb`.
 
 ## What is implemented
 
