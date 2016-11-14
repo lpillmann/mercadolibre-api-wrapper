@@ -9,6 +9,8 @@ For now, just create a Jupyter notebook in root folder and import module:
 import mercadolibre as ml
 ```
 
+See notebook `wrapper_example.ipynb`.
+
 ## What is implemented
 
 - Basic wrapper for querying ML's API
