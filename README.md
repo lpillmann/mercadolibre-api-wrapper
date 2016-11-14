@@ -13,8 +13,8 @@ import mercadolibre as ml
 
 - Basic wrapper for querying ML's API
 	- Search by keywords, product category or both combined
-	- Get page visits data for chosen items
-	- Get category name from ML's category ID
+	- Get page visits for chosen items of given df
+	- Get category name from a category ID
 - Extra handy tools
 	- Fix query and category names to be printed (e.g. in chart titles)
 
