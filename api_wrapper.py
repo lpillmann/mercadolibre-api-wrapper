@@ -6,7 +6,7 @@ import numpy as np
 import datetime as dt
 from tqdm import tqdm
 
-def get_df_from_query(query, items_per_query='200', total_results_limit=None):
+def get_df_from_query(query='', category='',  items_per_query='200', total_results_limit=0):
 	"""
 	Gets items using ML's public API search engine. 
 	Uses multiple requests when there are more than 200 results.
@@ -16,11 +16,14 @@ def get_df_from_query(query, items_per_query='200', total_results_limit=None):
 	query : str
 			search argument
 
+	category : str
+			ML category within which to search
+
 	items_per_query : str
-			how many results per request (max = 200), default '200' 
+			how many results per request (max = 200)
 
 	total_results_limit : str
-			maximum results to be downloaded. If None gets all available, default None
+			maximum results to be downloaded, if 0 gets all available
 
 	Returns
 	-------
@@ -33,27 +36,52 @@ def get_df_from_query(query, items_per_query='200', total_results_limit=None):
        * calculated columns (not included in standard API response)
 	"""
 
-	results = []
-	
+	# Checks if arguments are valid and quits if not
+	if (query == '' or query == None) and (category == '' or category == None):
+		print('Please provide either a query or category to be searched.')
+		return
+	else:
+		payload = {'q': str(query), 'category': str(category), 'limit': str(1), 'offset': str(0)}
+
+	if query == '' or query == None:
+		query_name = 'N/A'
+	else:
+		query_name = query
+
+	if (category == '') or (category == None):
+		category_name = 'N/A'
+	else:
+		# Gets category name
+		url = 'https://api.mercadolibre.com/categories/' + category
+		data = requests.get(url, params=payload).json()
+		category_name = data['name']
+
 	# Initial query to get how many results available
-	payload = {'q': str(query), 'limit': str(1), 'offset': str(0)}
+	#payload = {'q': str(query), 'limit': str(1), 'offset': str(0)}
+	results = []
 	url = 'https://api.mercadolibre.com/sites/MLB/search'
-	print('Buscando por "' + query + '"...')
-	data = requests.get(url, params=payload).json()
+	print('Searching for "' + query_name + '" in '+ category_name +'...')
+	api_request = requests.get(url, params=payload)
+	data = api_request.json()
 	total_itens = data['paging']['total']  # How many results available
+
+
+	if total_itens == 0:
+		print('No results found. Please try other search parameters.')
+		return
 
 	results = data['results']
 	df = DataFrame(results) # Initiatializes main df to be used later in the while loop
 
 	# Simple sanity check for the limit of itens to be requested
-	if (total_results_limit == None) or (total_results_limit > total_itens):
+	if (total_results_limit == 0) or (total_results_limit > total_itens):
 	    limit_itens = total_itens
 	else:
 	    limit_itens = total_results_limit
 	    
 	# Prints general info about query
-	#print(str(total_itens) + ' resultados encontrados no ML.')
-	#print(str(limit_itens) + ' itens sendo transferidos. Aguarde...')
+	#print(str(total_itens) + ' results found in ML.')
+	#print(str(limit_itens) + ' items being transfered. Please wait...')
 
 	pbar = tqdm(total=limit_itens)  # Initializes progress bar
 
@@ -85,8 +113,11 @@ def get_df_from_query(query, items_per_query='200', total_results_limit=None):
 
 	pbar.close()
 
+	print('Initial request sent to API: ' + api_request.url)
+
 	# Selects a subset of columns and fixes index
-	df = df[['id', 'title', 'price', 'sold_quantity', 'available_quantity', 'permalink', 'thumbnail', 'seller_address', 'seller', 'stop_time']]
+	df = df[['id', 'title', 'price', 'sold_quantity', 'available_quantity', 'permalink' \
+		, 'thumbnail', 'seller_address', 'seller', 'stop_time']]
 	df = df.set_index('id')	
 
 	# Sorts items by sold quantity and deletes duplicates with less sales (assuming they'd be 0)
@@ -145,13 +176,13 @@ def get_visits_df(main_df, num_items, sort_by='revenue', unit='day', time_ago=36
 			how many itens whose visits will be requested (max = 50)
 
 	sort_by : str
-			sorts main_df by this parameter, default 'revenue'
+			sorts main_df by this parameter
 
 	unit : str
-			time unit with which to look back ('day' or 'hour'), default 'day'
+			time unit with which to look back ('day' or 'hour')
 
 	time_ago : str
-			amount of days or hours, depending on 'unit', default 365
+			amount of days or hours, depending on 'unit'
 
 	Returns
 	-------
