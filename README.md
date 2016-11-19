@@ -20,7 +20,7 @@ See notebook `wrapper-example.ipynb`.
 - Extra handy tools
 	- Fix query and category names to be printed (e.g. in chart titles)
 
-## Important TODOs
+## TODOs
 
 - Category navigation
 	- Go from parent to children and vice-versa
@@ -30,3 +30,11 @@ See notebook `wrapper-example.ipynb`.
 	- Maybe make a simple function to get for a single item?
 - Play around with trends
 	- What can we get from that?
+- Get all products from a seller
+	- Total revenue --> how big are they?
+	- Avg. ticket price
+- Combine sellers' data with categories
+	- Compare a seller's performance with products in category
+	- Compare a seller's performance with other sellers in similar categories
+- Rank sellers and analyse segmentation
+	- Which ones should we target?
