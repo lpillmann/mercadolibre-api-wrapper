@@ -11,10 +11,11 @@ import pandas as pd
 import datetime as dt
 from tqdm import tqdm
 
-def get_df_from_query(query='', category='',  items_per_query='200', total_results_limit=0):
+def get_df_from_query(query='', category='', seller_id='',  items_per_query='200', total_results_limit=0):
     """
     Gets items using ML's public API search engine. 
     Uses multiple requests when there are more than 200 results.
+    Performs basic data cleaning removing duplicates.
 
     Parameters
     ----------
@@ -23,6 +24,9 @@ def get_df_from_query(query='', category='',  items_per_query='200', total_resul
 
     category : str
             ML category within which to search
+
+    seller_id : str
+            ML seller identification number
 
     items_per_query : str
             how many results per request (max = 200)
@@ -42,12 +46,19 @@ def get_df_from_query(query='', category='',  items_per_query='200', total_resul
     """
 
     # Checks if arguments are valid and quits if not
-    if (query == '' or query == None) and (category == '' or category == None):
-        print('Please provide either a query or category to be searched.')
+    if (query == '' or query == None) and (category == '' or category == None) \
+        and (seller_id == '' or seller_id == None):
+        
+        print('Please provide valid inputs to be searched.')
         return
     else:
-        payload = {'q': str(query), 'category': str(category), 'limit': str(1), 'offset': str(0)}
+        if (seller_id == '' or seller_id == None):
+            payload = {'q': str(query), 'category': str(category), 'limit': str(1), 'offset': str(0)}
+        # Only if seller_id is valid it is included in payload
+        else:
+            payload = {'q': str(query), 'category': str(category), 'seller_id': str(seller_id), 'limit': str(1), 'offset': str(0)}
 
+    # Fixes names to later print eventually
     if query == '' or query == None:
         query_name = 'N/A'
     else:
@@ -61,11 +72,16 @@ def get_df_from_query(query='', category='',  items_per_query='200', total_resul
         data = requests.get(url, params=payload).json()
         category_name = data['name']
 
+    if seller_id == '' or seller_id == None:
+        seller_name = 'N/A'
+    else:
+        seller_name = seller_id
+    
     # Initial query to get how many results available
     #payload = {'q': str(query), 'limit': str(1), 'offset': str(0)}
     results = []
     url = 'https://api.mercadolibre.com/sites/MLB/search'
-    print('Searching for "' + query_name + '" in '+ category_name +'...')
+    print('Searching for "' + query_name + '" in '+ category_name + ' sold by ' + seller_name + '...')
     api_request = requests.get(url, params=payload)
     data = api_request.json()
     total_itens = data['paging']['total']  # How many results available
@@ -74,6 +90,8 @@ def get_df_from_query(query='', category='',  items_per_query='200', total_resul
     if total_itens == 0:
         print('No results found. Please try other search parameters.')
         return
+
+    print(str(total_itens) + ' results found.')
 
     results = data['results']
     df = pd.DataFrame(results) # Initiatializes main df to be used later in the while loop
@@ -278,16 +296,21 @@ def fix_names_query_category(query, category):
 
     return query_name, category_name
 
-def get_children_categories(category):
-    children_categories = get_category_info(category)['children_categories']
-    if len(children_categories) == 0:
-        return children_categories
-    else:
-        for item in children_categories:
-            item['children_categories'] = get_children_categories(item['id'])
-            print(item['name'])
+# *NOT WORKING*
+# def get_all_children_categories(category):
+#     """Recursive procedure to get all categories nested within one provided."""
+#     children_categories = get_category_info(category)['children_categories']
+#     if len(children_categories) == 0:
+#         return children_categories
+#     else:
+#         for item in children_categories:
+#             item['children_categories'] = get_children_categories(item['id'])
+#             print(item['name'])
         
 
+def get_children_categories(category):
+    """Returns categories one level below the one provided."""
+    return get_category_info(category)['children_categories']
 
 
 
