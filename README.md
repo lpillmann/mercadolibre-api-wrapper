@@ -30,7 +30,7 @@ See notebook `wrapper-example.ipynb`.
 	- Maybe make a simple function to get for a single item?
 - Play around with trends
 	- What can we get from that?
-- Get all products from a seller
+<s>- Get all products from a seller</s>
 	- Total revenue --> how big are they?
 	- Avg. ticket price
 - Combine sellers' data with categories
