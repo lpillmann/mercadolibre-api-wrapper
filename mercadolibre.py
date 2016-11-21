@@ -266,6 +266,21 @@ def get_category_name(category_id):
     return category_name
 
 
+# *NOT WORKING*
+# def get_all_children_categories(category):
+#     """Recursive procedure to get all categories nested within one provided."""
+#     children_categories = get_category_info(category)['children_categories']
+#     if len(children_categories) == 0:
+#         return children_categories
+#     else:
+#         for item in children_categories:
+#             item['children_categories'] = get_children_categories(item['id'])
+#             print(item['name'])
+        
+        
+def get_children_categories(category):
+    """Returns categories one level below the one provided."""
+    return get_category_info(category)['children_categories']
 
 
 
@@ -295,25 +310,3 @@ def fix_names_query_category(query, category):
         category_name = get_category_name(category)
 
     return query_name, category_name
-
-# *NOT WORKING*
-# def get_all_children_categories(category):
-#     """Recursive procedure to get all categories nested within one provided."""
-#     children_categories = get_category_info(category)['children_categories']
-#     if len(children_categories) == 0:
-#         return children_categories
-#     else:
-#         for item in children_categories:
-#             item['children_categories'] = get_children_categories(item['id'])
-#             print(item['name'])
-        
-
-def get_children_categories(category):
-    """Returns categories one level below the one provided."""
-    return get_category_info(category)['children_categories']
-
-
-
-
-
-

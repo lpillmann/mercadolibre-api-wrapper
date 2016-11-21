@@ -14,9 +14,11 @@ See notebook `wrapper-example.ipynb`.
 ## What is implemented
 
 - Basic wrapper for querying ML's API
-	- Search by keywords, product category or both combined
+	- Search by **keywords**, product **category**, **seller** id or all combined
 	- Get page visits for chosen items of given df
-	- Get category name from a category ID
+	- Get category info from a category ID
+		- Get category name from a category ID
+		- Get children categories from category ID
 - Extra handy tools
 	- Fix query and category names to be printed (e.g. in chart titles)
 
