@@ -330,7 +330,7 @@ def get_sellers_by_category(category_id, mkt_share_by='revenue', total_results_l
 
     return s, category_name
 
-def get_seller_profile_url(seller_id):
+def seller_profile_url(seller_id):
     """Returns seller profile URL for Brazilian ML (MLB)"""
     url = 'http://perfil.mercadolivre.com.br/profile/showProfile?id=' + seller_id + '&role=seller'
     return url
