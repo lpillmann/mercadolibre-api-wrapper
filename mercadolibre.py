@@ -10,8 +10,12 @@ import requests
 import pandas as pd
 import datetime as dt
 from tqdm import tqdm
+import matplotlib
+import matplotlib.pyplot as plt
 
-def get_df_from_query(query='', category='', seller_id='',  items_per_query='200', total_results_limit=0):
+### API requests
+
+def get_df_from_query(query='', category='', seller_id='',  items_per_query=200, total_results_limit=0):
     """
     Gets items using ML's public API search engine. 
     Uses multiple requests when there are more than 200 results.
@@ -91,8 +95,6 @@ def get_df_from_query(query='', category='', seller_id='',  items_per_query='200
         print('No results found. Please try other search parameters.')
         return
 
-    print(str(total_itens) + ' results found.')
-
     results = data['results']
     df = pd.DataFrame(results) # Initiatializes main df to be used later in the while loop
 
@@ -110,6 +112,7 @@ def get_df_from_query(query='', category='', seller_id='',  items_per_query='200
 
     # Main loop to make multiple requests to get total results
     offset = 0
+    remaining = limit_itens
 
     while len(df) < limit_itens:
         # Calculations or progress bar
@@ -137,6 +140,8 @@ def get_df_from_query(query='', category='', seller_id='',  items_per_query='200
     pbar.close()
 
     print('Initial request sent to API: ' + api_request.url)
+    print(str(total_itens) + ' results found.')
+
 
     # Selects a subset of columns and fixes index
     df = df[['id', 'title', 'price', 'sold_quantity', 'available_quantity', 'permalink' \
@@ -285,7 +290,7 @@ def get_children_categories(category):
 
 
 """
-Handy tools for dealing with Mercado Libre's API data.
+Analysis and handy tools for dealing with Mercado Libre's API data.
 -------------
 November 2016
 """
@@ -310,3 +315,48 @@ def fix_names_query_category(query, category):
         category_name = get_category_name(category)
 
     return query_name, category_name
+
+def category_market_share(category_id, criterion='revenue', total_results_limit=0):
+    """Returns category's data by seller and plots market share pie chart"""
+       
+    df = get_df_from_query(category=category_id, total_results_limit=total_results_limit)
+    category_name = get_category_name(category_id)
+
+    # Groups items' DF by seller and fixes price to average value
+    s = df.groupby('seller_id').sum()  
+    s.price = df.groupby('seller_id').mean().price  # Substitutes sum of prices by mean price by seller
+    s = s.rename(columns={'price': 'average_price'})
+    
+    # Adds number of listings by seller into new column
+    counts = df.groupby('seller_id').size()
+    s['listings'] = counts
+    s.sort_values('listings', ascending=False).head()
+
+    # Sorts and adds column with sellers' shares
+    s = s.sort_values(criterion, ascending=False)
+    total_revenue = s[criterion].sum()
+    s['market_share'] = s.revenue / total_revenue
+    
+    #to_show = 20  # Limits how many sellers to print
+    #print()
+    #print('Market share (by ' + criterion +')' + ' of the top ' + str(to_show) \
+    #    +' sellers in category ' + category_name + ':')
+    #print(s.market_share.head(to_show))
+
+    return s, category_name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
