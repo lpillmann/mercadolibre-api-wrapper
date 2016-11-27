@@ -23,11 +23,12 @@ See notebook `wrapper-example.ipynb`.
 	- Seller profile page from ID (`ml.seller_profile_url`)
 
 - Extra handy tools
+	- **Category explorer**: helps finding subcategory IDs (see notebook `categories-explorer.ipynb`)
 	- Fix query and category names to be printed (e.g. in chart titles)
 
 ## TODOs
 
-- Category navigation
+- <s>Category navigation</s> ("manual" navigation, `categories-explorer.ipynb`)
 	- Go from parent to children and vice-versa
 - Which category?
 	- Get item's category to later further search
