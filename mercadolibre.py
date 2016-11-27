@@ -7,11 +7,10 @@ November 2016
 """
 
 import requests
+from bs4 import BeautifulSoup
 import pandas as pd
 import datetime as dt
 from tqdm import tqdm
-import matplotlib
-import matplotlib.pyplot as plt
 
 ### API requests
 
@@ -330,6 +329,27 @@ def get_sellers_by_category(category_id, mkt_share_by='revenue', total_results_l
     s = s.sort_values('market_share', ascending=False)
 
     return s, category_name
+
+def get_seller_profile_url(seller_id):
+    """Returns seller profile URL for Brazilian ML (MLB)"""
+    url = 'http://perfil.mercadolivre.com.br/profile/showProfile?id=' + seller_id + '&role=seller'
+    return url
+
+### Web Scraping
+
+def get_seller_profile_url_from_item_page(product_url):
+    """Returns seller profile URL by scraping an item's page"""
+    r = requests.get(product_url)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    more_feedback = soup.find('a', attrs={'id':'moreFeedback'})
+    
+    # Link is inside an iframe, so we have to make a new request:   
+    iframe_link = 'http://produto.mercadolivre.com.br' + more_feedback['href']
+    r = requests.get(iframe_link)
+    soup_iframe = BeautifulSoup(r.text, 'html.parser')
+    profile_link = soup_iframe.find('a', string='Ver todas as qualificações do vendedor')
+    
+    return profile_link['href']
 
 """
 Handy tools for dealing with Mercado Libre's API data.
