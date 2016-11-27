@@ -25,17 +25,13 @@ def get_df_from_query(query='', category='', seller_id='',  items_per_query=200,
     ----------
     query : str
             search argument
-
     category : str
             ML category within which to search
-
     seller_id : str
             ML seller identification number
-
-    items_per_query : str
+    items_per_query : int
             how many results per request (max = 200)
-
-    total_results_limit : str
+    total_results_limit : int
             maximum results to be downloaded, if 0 gets all available
 
     Returns
@@ -47,6 +43,16 @@ def get_df_from_query(query='', category='', seller_id='',  items_per_query=200,
        'start_time'*, 'days_ago'*, 'city'*, 'state'*, 'seller_id'*] 
 
        * calculated columns (not included in standard API response)
+
+    Examples
+    --------
+    >>> df1 = ml.get_df_from_query(query='kit painel solar') 
+    >>> df2 = ml.get_df_from_query(query='bateria', category='MLB61076', \
+        items_per_query=100, total_results_limit=1000)
+
+    >>> df3 = ml.get_df_from_query(seller_id='165332412', category='MLB180269')
+    ...    
+
     """
 
     # Checks if arguments are valid and quits if not
@@ -199,16 +205,12 @@ def get_visits_df(main_df, num_items, sort_by='revenue', unit='day', time_ago=36
     ----------
     main_df : Pandas DataFrame
             df used as data source (format as returned by 'get_df_from_query')
-
     num_items : str
             how many itens whose visits will be requested (max = 50)
-
     sort_by : str
             sorts main_df by this parameter
-
     unit : str
             time unit with which to look back ('day' or 'hour')
-
     time_ago : str
             amount of days or hours, depending on 'unit'
 
@@ -287,16 +289,57 @@ def get_children_categories(category):
     """Returns categories one level below the one provided."""
     return get_category_info(category)['children_categories']
 
+def get_sellers_by_category(category_id, mkt_share_by='revenue', total_results_limit=0):
+    """
+    Returns category's DataFrame grouped by seller and adds two columns: \
+    market share and amount of listings (items announced)
 
+    Parameters
+    ----------
+    category_id : str
+            ML id for categories, e.g. MLB180269 for Bicicletas
+    mkt_share_by : str
+            optional criterion to use to calculate market share (revenue or sold_quantity)
+    total_results_limit : int
+            maximum results to be downloaded, if 0 gets all available
+
+    Returns
+    -------
+    s : Pandas DataFrame
+        DataFrame of all sellers in category, with market share and # of listings per seller.
+    category_name: str
+        formal ML's name for category, to be printed later on
+
+    """
+
+    df = get_df_from_query(category=category_id, total_results_limit=total_results_limit)
+    category_name = get_category_name(category_id)
+
+    # Groups items' df by seller and fixes price to average value
+    s = df.groupby('seller_id').sum()  
+    s.price = df.groupby('seller_id').mean().price  # Substitutes sum of prices by mean price by seller
+    s = s.rename(columns={'price': 'average_price'})
+    
+    # Adds number of listings by seller into new column
+    counts = df.groupby('seller_id').size()
+    s['listings'] = counts
+
+    # Sorts and adds column with sellers' shares
+    total_revenue = s[mkt_share_by].sum()
+    s['market_share'] = s.revenue / total_revenue
+    s = s.sort_values('market_share', ascending=False)
+
+    return s, category_name
 
 """
-Analysis and handy tools for dealing with Mercado Libre's API data.
+Handy tools for dealing with Mercado Libre's API data.
 -------------
 November 2016
 """
 
-def fix_names_query_category(query, category):
-    """Returns query and category names from ML code and 'N/A' if empty, e.g., to be printed in charts."""
+def fix_names(query='', category='', seller=''):
+    """Returns dict with names from ML and 'N/A' if empty, e.g., to be printed in charts."""
+    
     if (query == '' or query == None) and (category == '' or category == None):
         print('Please provide either a query or category.')
         return
@@ -314,36 +357,14 @@ def fix_names_query_category(query, category):
         # Gets category name
         category_name = get_category_name(category)
 
-    return query_name, category_name
+    if seller == '' or seller == None:
+        seller_name = 'N/A'
+    else:
+        seller_name = seller
 
-def category_market_share(category_id, criterion='revenue', total_results_limit=0):
-    """Returns category's data by seller and plots market share pie chart"""
-       
-    df = get_df_from_query(category=category_id, total_results_limit=total_results_limit)
-    category_name = get_category_name(category_id)
+    names = {'query': query_name, 'category': category_name, 'seller': seller_name}
 
-    # Groups items' DF by seller and fixes price to average value
-    s = df.groupby('seller_id').sum()  
-    s.price = df.groupby('seller_id').mean().price  # Substitutes sum of prices by mean price by seller
-    s = s.rename(columns={'price': 'average_price'})
-    
-    # Adds number of listings by seller into new column
-    counts = df.groupby('seller_id').size()
-    s['listings'] = counts
-    s.sort_values('listings', ascending=False).head()
-
-    # Sorts and adds column with sellers' shares
-    s = s.sort_values(criterion, ascending=False)
-    total_revenue = s[criterion].sum()
-    s['market_share'] = s.revenue / total_revenue
-    
-    #to_show = 20  # Limits how many sellers to print
-    #print()
-    #print('Market share (by ' + criterion +')' + ' of the top ' + str(to_show) \
-    #    +' sellers in category ' + category_name + ':')
-    #print(s.market_share.head(to_show))
-
-    return s, category_name
+    return names
 
 
 
