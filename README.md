@@ -1,4 +1,4 @@
-# Projeto A 
+# Mercado Libre's API Wrapper 
 
 ## Intro
 Repository with code and notebooks used to work with Mercado Libre's API.
